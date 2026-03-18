@@ -1,0 +1,28 @@
+services:
+
+  postgres_db:
+    image: postgres:15
+    container_name: postgres_liquibase
+    environment:
+      POSTGRES_DB: liquibase_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+
+  liquibase:
+    image: liquibase/liquibase
+    container_name: liquibase_runner
+    depends_on:
+      - postgres_db
+    volumes:
+      - ./changelog:/liquibase/changelog
+      - ./drivers:/liquibase/drivers
+    command:
+      --url=jdbc:postgresql://postgres_db:5432/liquibase_db
+      --username=postgres
+      --password=postgres
+      --driver=org.postgresql.Driver
+      --classpath=/liquibase/drivers/postgresql-42.7.10.jar
+      --changeLogFile=db.changelog.xml
+      update
